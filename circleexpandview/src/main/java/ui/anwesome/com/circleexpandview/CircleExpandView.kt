@@ -3,6 +3,7 @@ package ui.anwesome.com.circleexpandview
 /**
  * Created by anweshmishra on 12/01/18.
  */
+import android.app.Activity
 import android.view.*
 import android.content.*
 import android.graphics.*
@@ -153,6 +154,13 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
                 animated = false
             }
          }
+    }
+    companion object {
+        fun create(activity:Activity):CircleExpandView {
+            val view = CircleExpandView(activity)
+            activity.setContentView(view)
+            return view
+        }
     }
  }
 fun ConcurrentLinkedQueue<CircleExpandView.CircleExpand>.at(j:Int):CircleExpandView.CircleExpand? {
