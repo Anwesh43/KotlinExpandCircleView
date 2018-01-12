@@ -49,16 +49,31 @@ class CircleExpandView(ctx:Context):View(ctx) {
     }
     data class CircleExpandContainer(var n:Int,var w:Float,var h:Float) {
         val circleExpands:ConcurrentLinkedQueue<CircleExpand> = ConcurrentLinkedQueue()
+        val state = ContainerState(n)
         fun draw(canvas:Canvas,paint:Paint) {
             circleExpands.forEach {
                 it.draw(canvas,paint)
             }
+            if(n > 0) {
+                val gap = (4*w/5)/n
+                state.executeFn{
+                    val scale = circleExpands.at(it)?.state?.scale?:0f
+                    canvas.drawLine(w/10,4*h/5,w/10+gap*it+gap*scale,4*h/5,paint)
+                }
+            }
         }
         fun update(stopcb:(Float,Int)->Unit) {
-
+            state.executeFn { j ->
+                circleExpands.at(j)?.update {
+                    stopcb(it,j)
+                    state.incrementCounter()
+                }
+            }
         }
         fun startUpdating(startcb:()->Unit) {
-
+            state.executeFn {
+                circleExpands.at(it)?.startUpdating(startcb)
+            }
         }
     }
     data class ContainerState(var n:Int,var j:Int = 0,var dir:Int = 1) {
@@ -74,3 +89,13 @@ class CircleExpandView(ctx:Context):View(ctx) {
         }
     }
  }
+fun ConcurrentLinkedQueue<CircleExpandView.CircleExpand>.at(j:Int):CircleExpandView.CircleExpand? {
+    var i:Int  = 0
+    forEach {
+        if(i == j) {
+            return it
+        }
+        i++
+    }
+    return null
+}
