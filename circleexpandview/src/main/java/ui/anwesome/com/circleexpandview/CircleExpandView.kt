@@ -15,6 +15,7 @@ class CircleExpandView(ctx:Context):View(ctx) {
         return true
     }
     data class CircleExpand(var x:Float,var y:Float,var r:Float,var or:Float) {
+        val state = CircleExpandState()
         fun draw(canvas:Canvas,paint:Paint) {
             paint.style = Paint.Style.FILL
             paint.strokeWidth = 8f
@@ -24,10 +25,10 @@ class CircleExpandView(ctx:Context):View(ctx) {
             canvas.restore()
         }
         fun update(stopcb:(Float)->Unit) {
-
+            state.update(stopcb)
         }
         fun startUpdating(startcb:()->Unit) {
-
+            state.startUpdating(startcb)
         }
     }
     data class CircleExpandState(var scale:Float = 0f,var dir:Float = 0f,var prevScale:Float = 0f) {
@@ -37,6 +38,7 @@ class CircleExpandView(ctx:Context):View(ctx) {
                 scale = prevScale + dir
                 dir = 0f
                 prevScale = scale
+                stopcb(scale)
             }
         }
         fun startUpdating(startcb:()->Unit) {
