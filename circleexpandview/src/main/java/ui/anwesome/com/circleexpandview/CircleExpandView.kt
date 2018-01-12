@@ -8,7 +8,7 @@ import android.content.*
 import android.graphics.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class CircleExpandView(ctx:Context):View(ctx) {
+class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     override fun onDraw(canvas:Canvas) {
 
@@ -86,6 +86,22 @@ class CircleExpandView(ctx:Context):View(ctx) {
         }
         fun executeFn(cb:(Int)->Unit) {
             cb(j)
+        }
+    }
+    data class CircleExpandRenderer(var view:CircleExpandView,var time:Int = 0){
+        var container:CircleExpandContainer?=null
+        fun render(canvas:Canvas,paint:Paint) {
+            if(time == 0) {
+                val w = canvas.width.toFloat()
+                val h = canvas.height.toFloat()
+                container = CircleExpandContainer(view.n,w,h)
+            }
+            canvas.drawColor(Color.parseColor("#212121"))
+            container?.draw(canvas,paint)
+            time++
+        }
+        fun handleTap() {
+
         }
     }
  }
