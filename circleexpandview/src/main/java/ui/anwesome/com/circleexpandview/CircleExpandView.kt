@@ -114,6 +114,31 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
 
         }
     }
+    data class Animator(var view:CircleExpandView,var animated:Boolean = false) {
+        fun animate(updatecb:()->Unit) {
+            if(animated) {
+                updatecb()
+                try {
+                    Thread.sleep(50)
+                    view.invalidate()
+                }
+                catch(ex:Exception) {
+
+                }
+            }
+        }
+        fun start() {
+            if(!animated) {
+                animated = true
+                view.postInvalidate()
+            }
+        }
+        fun stop() {
+            if(animated) {
+                animated = false
+            }
+         }
+    }
  }
 fun ConcurrentLinkedQueue<CircleExpandView.CircleExpand>.at(j:Int):CircleExpandView.CircleExpand? {
     var i:Int  = 0
