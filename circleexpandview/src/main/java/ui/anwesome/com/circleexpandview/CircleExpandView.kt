@@ -100,6 +100,7 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
     }
     data class CircleExpandRenderer(var view:CircleExpandView,var time:Int = 0){
         var container:CircleExpandContainer?=null
+        val animator = Animator(view)
         fun render(canvas:Canvas,paint:Paint) {
             if(time == 0) {
                 val w = canvas.width.toFloat()
@@ -108,10 +109,17 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
             }
             canvas.drawColor(Color.parseColor("#212121"))
             container?.draw(canvas,paint)
+            animator.animate {
+                container?.update {scale,j ->
+                    animator.stop()
+                }
+            }
             time++
         }
         fun handleTap() {
-
+            container?.startUpdating {
+                animator.start()
+            }
         }
     }
     data class Animator(var view:CircleExpandView,var animated:Boolean = false) {
