@@ -23,15 +23,20 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
         }
         return true
     }
-    data class CircleExpand(var x:Float,var y:Float,var r:Float,var or:Float) {
+    data class CircleExpand(var x:Float,var y:Float,var r:Float,var or:Float,var prevR:Float = 0f) {
         val state = CircleExpandState()
         fun draw(canvas:Canvas,paint:Paint) {
-            paint.style = Paint.Style.FILL
+            paint.style = Paint.Style.STROKE
             paint.strokeWidth = 8f
             canvas.save()
             canvas.translate(x,y)
-            canvas.drawCircle(0f,0f,or+(r-or),paint)
+            canvas.drawCircle(0f,0f,r,paint)
             canvas.restore()
+            r = prevR+(or-prevR)*state.scale
+        }
+        fun adjustR(r:Float) {
+            this.r = r
+            this.prevR = r
         }
         fun update(stopcb:(Float)->Unit) {
             state.update(stopcb)
@@ -53,21 +58,22 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
         fun startUpdating(startcb:()->Unit) {
             if(dir == 0f) {
                 dir = 1 - 2 * scale
+                startcb()
             }
         }
     }
-    data class CircleExpandContainer(var n:Int,var w:Float,var h:Float) {
+    data class CircleExpandContainer(var n:Int,var w:Float,var h:Float,var r:Float = w/(2*n+1)) {
         val circleExpands:ConcurrentLinkedQueue<CircleExpand> = ConcurrentLinkedQueue()
         val state = ContainerState(n)
         init {
             if(n > 0) {
-                var r = w/(2*n+1)
                 for (i in 0..n - 1) {
-                    circleExpands.add(CircleExpand(w/2,h/2,r*i,r*(i+1)))
+                    circleExpands.add(CircleExpand(w/2,h/2,0f,r*(i+1)))
                 }
             }
         }
         fun draw(canvas:Canvas,paint:Paint) {
+            paint.strokeCap = Paint.Cap.ROUND
             circleExpands.forEach {
                 it.draw(canvas,paint)
             }
@@ -75,7 +81,7 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
                 val gap = (4*w/5)/n
                 state.executeFn{
                     val scale = circleExpands.at(it)?.state?.scale?:0f
-                    canvas.drawLine(w/10,4*h/5,w/10+gap*it+gap*scale,4*h/5,paint)
+                    canvas.drawLine(w/10,9*h/10,w/10+gap*it+gap*scale,9*h/10,paint)
                 }
             }
         }
@@ -83,12 +89,19 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
             state.executeFn { j ->
                 circleExpands.at(j)?.update {
                     stopcb(it,j)
+                    if(state.dir == -1) {
+                        circleExpands?.at(j)?.adjustR(0f)
+                    }
                     state.incrementCounter()
+
                 }
             }
         }
         fun startUpdating(startcb:()->Unit) {
             state.executeFn {
+                if(state.dir == 1) {
+                    circleExpands?.at(it)?.adjustR(it*r)
+                }
                 circleExpands.at(it)?.startUpdating(startcb)
             }
         }
@@ -115,6 +128,7 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
                 container = CircleExpandContainer(view.n,w,h)
             }
             canvas.drawColor(Color.parseColor("#212121"))
+            paint.style = Paint.Style.STROKE
             paint.color = Color.parseColor("#FF9800")
             container?.draw(canvas,paint)
             animator.animate {
