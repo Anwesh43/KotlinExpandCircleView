@@ -44,12 +44,22 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
             }
         }
         fun startUpdating(startcb:()->Unit) {
-            dir = 1-2*scale
+            if(dir == 0f) {
+                dir = 1 - 2 * scale
+            }
         }
     }
     data class CircleExpandContainer(var n:Int,var w:Float,var h:Float) {
         val circleExpands:ConcurrentLinkedQueue<CircleExpand> = ConcurrentLinkedQueue()
         val state = ContainerState(n)
+        init {
+            if(n > 0) {
+                var r = w/(2*n+1)
+                for (i in 0..n - 1) {
+                    circleExpands.add(CircleExpand(w/2,h/2,r*i,r*(i+1)))
+                }
+            }
+        }
         fun draw(canvas:Canvas,paint:Paint) {
             circleExpands.forEach {
                 it.draw(canvas,paint)
