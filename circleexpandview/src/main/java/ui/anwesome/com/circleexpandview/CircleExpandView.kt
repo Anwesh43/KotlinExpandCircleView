@@ -6,6 +6,8 @@ package ui.anwesome.com.circleexpandview
 import android.view.*
 import android.content.*
 import android.graphics.*
+import java.util.concurrent.ConcurrentLinkedQueue
+
 class CircleExpandView(ctx:Context):View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     override fun onDraw(canvas:Canvas) {
@@ -43,6 +45,20 @@ class CircleExpandView(ctx:Context):View(ctx) {
         }
         fun startUpdating(startcb:()->Unit) {
             dir = 1-2*scale
+        }
+    }
+    data class CircleExpandContainer(var n:Int,var w:Float,var h:Float) {
+        val circleExpands:ConcurrentLinkedQueue<CircleExpand> = ConcurrentLinkedQueue()
+        fun draw(canvas:Canvas,paint:Paint) {
+            circleExpands.forEach {
+                it.draw(canvas,paint)
+            }
+        }
+        fun update(stopcb:(Float,Int)->Unit) {
+
+        }
+        fun startUpdating(startcb:()->Unit) {
+
         }
     }
 }
