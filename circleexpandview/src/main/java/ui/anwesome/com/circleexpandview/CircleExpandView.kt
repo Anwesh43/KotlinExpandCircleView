@@ -10,10 +10,16 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    val renderer = CircleExpandRenderer(this)
     override fun onDraw(canvas:Canvas) {
-
+        renderer.render(canvas,paint)
     }
     override fun onTouchEvent(event:MotionEvent):Boolean {
+        when(event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                renderer.handleTap()
+            }
+        }
         return true
     }
     data class CircleExpand(var x:Float,var y:Float,var r:Float,var or:Float) {
@@ -108,6 +114,7 @@ class CircleExpandView(ctx:Context,var n:Int = 4):View(ctx) {
                 container = CircleExpandContainer(view.n,w,h)
             }
             canvas.drawColor(Color.parseColor("#212121"))
+            paint.color = Color.parseColor("#FF9800")
             container?.draw(canvas,paint)
             animator.animate {
                 container?.update {scale,j ->
